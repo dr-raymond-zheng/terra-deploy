@@ -71,7 +71,7 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 # --- CloudFront distribution ---
 resource "aws_cloudfront_distribution" "cdn" {
   enabled             = true
-  comment             = var.cloudfront_name
+  comment             = "${var.cloudfront_name}"
   default_root_object = "index.html"
   price_class         = var.cf_price_class
 
