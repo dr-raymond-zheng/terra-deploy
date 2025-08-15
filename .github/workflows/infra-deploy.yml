@@ -1,0 +1,66 @@
+name: Infra (Terraform)
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-deploy.yml"
+  push:
+    branches: [ "main" ]
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-deploy.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-southeast-2
+  GHA_INFRA_ROLE_ARN: ${{ vars.GHA_INFRA_ROLE_ARN }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: infra } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: 1.8.5 }
+
+      - name: Configure AWS creds via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.GHA_INFRA_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init/Validate/Plan
+        run: |
+          terraform init -upgrade
+          terraform fmt -check
+          terraform validate
+          terraform plan -out=tfplan
+
+      - uses: actions/upload-artifact@v4
+        with: { name: tfplan, path: infra/tfplan }
+
+  apply:
+    if: github.ref == 'refs/heads/main'
+    needs: [plan]
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults: { run: { working-directory: infra } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: 1.8.5 }
+
+      - name: Configure AWS creds via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.GHA_INFRA_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init & Apply
+        run: |
+          terraform init -upgrade
+          terraform apply -auto-approve
