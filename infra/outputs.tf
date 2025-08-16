@@ -15,5 +15,5 @@ output "gha_app_role_arn" {
 }
 
 output "gha_infra_role_arn" {
-  value = aws_iam_role.gha_infra.arn
+  value = data.aws_iam_role.gha_infra.arn
 }

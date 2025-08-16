@@ -199,61 +199,6 @@ resource "aws_iam_role_policy_attachment" "app_attach" {
   policy_arn = aws_iam_policy.app_policy.arn
 }
 
-# Infra role trust: any ref on the INFRA repo (PRs/branches/tags)
-data "aws_iam_policy_document" "gha_trust_infra" {
-  statement {
-    effect  = "Allow"
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:aud"
-      values   = ["sts.amazonaws.com"]
-    }
-    condition {
-      test     = "StringLike"
-      variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo_infra}:*"]
-    }
-  }
-}
-
-resource "aws_iam_role" "gha_infra" {
-  name               = "${var.project}-gha-infra"
-  assume_role_policy = data.aws_iam_policy_document.gha_trust_infra.json
-  tags               = local.tags
-}
-
-data "aws_iam_policy_document" "infra_permissions" {
-  statement {
-    effect  = "Allow"
-    actions = ["s3:*"]
-    resources = [
-      aws_s3_bucket.site.arn,
-      "${aws_s3_bucket.site.arn}/*"
-    ]
-  }
-  statement {
-    effect    = "Allow"
-    actions   = ["cloudfront:*"]
-    resources = ["*"]
-  }
-  statement {
-    effect    = "Allow"
-    actions   = ["iam:Get*", "iam:List*"]
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_policy" "infra_policy" {
-  name   = "${var.project}-gha-infra-policy"
-  policy = data.aws_iam_policy_document.infra_permissions.json
-}
-
-resource "aws_iam_role_policy_attachment" "infra_attach" {
-  role       = aws_iam_role.gha_infra.name
-  policy_arn = aws_iam_policy.infra_policy.arn
+data "aws_iam_role" "gha_infra" {
+  name = "terra-demo-gha-infra"
 }
