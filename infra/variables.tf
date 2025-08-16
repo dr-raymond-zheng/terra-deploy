@@ -12,9 +12,14 @@ variable "project" {
   default     = "terra-demo"
 }
 variable "region" {
-  description = "AWS region"
+  description = "AWS region Sydney"
   type        = string
   default     = "ap-southeast-2"
+}
+variable "region2" {
+  description = "AWS region Melbourne"
+  type        = string
+  default     = "ap-southeast-4"
 }
 
 # Repos used in GitHub OIDC trust conditions
