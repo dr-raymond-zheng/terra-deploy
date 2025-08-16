@@ -111,7 +111,7 @@ resource "aws_cloudfront_distribution" "cdn" {
 
   viewer_certificate {
     cloudfront_default_certificate = true
-    minimum_protocol_version       = "TLSv1.2_2021"
+#    minimum_protocol_version       = "TLSv1.2_2021" # TLSv1 only.
   }
 
   tags = local.tags
