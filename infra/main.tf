@@ -289,15 +289,15 @@ resource "aws_s3_bucket_notification" "site_events" {
 }
 
 resource "aws_sns_topic_policy" "s3_site_events_policy" {
-  arn    = aws_sns_topic.s3_site_events.arn
+  arn = aws_sns_topic.s3_site_events.arn
   policy = jsonencode({
     Version = "2008-10-17"
     Statement = [
       {
-        Effect = "Allow"
+        Effect    = "Allow"
         Principal = { Service = "s3.amazonaws.com" }
-        Action = "SNS:Publish"
-        Resource = aws_sns_topic.s3_site_events.arn
+        Action    = "SNS:Publish"
+        Resource  = aws_sns_topic.s3_site_events.arn
         Condition = {
           ArnLike = {
             "aws:SourceArn" = aws_s3_bucket.site.arn
