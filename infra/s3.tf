@@ -116,13 +116,6 @@ resource "aws_s3_bucket_logging" "site" {
   target_prefix = "s3/${aws_s3_bucket.site.id}/"
 }
 
-resource "aws_s3_bucket_logging" "site_replica" {
-  provider      = aws.mel
-  bucket        = aws_s3_bucket.site_replica.id
-  target_bucket = aws_s3_bucket.logs.id
-  target_prefix = "s3/${aws_s3_bucket.site_replica.id}/"
-}
-
 resource "aws_s3_bucket_policy" "site" {
   bucket = aws_s3_bucket.site.id
   policy = data.aws_iam_policy_document.s3_allow_oac.json
