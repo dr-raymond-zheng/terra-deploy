@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 1.5.0"
   required_providers {
     aws = {
-      source = "hashicorp/aws",
+      source  = "hashicorp/aws",
       version = "~> 5.0"
     }
   }
@@ -20,8 +20,8 @@ locals {
 
 # --- GitHub OIDC provider (created once) ---
 resource "aws_iam_openid_connect_provider" "github" {
-  url = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
   # GitHub OIDC root CA thumbprint (verify occasionally)
   thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
 }
@@ -71,7 +71,7 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 # --- CloudFront distribution ---
 resource "aws_cloudfront_distribution" "cdn" {
   enabled             = true
-  comment             = "${var.cloudfront_name}"
+  comment             = var.cloudfront_name
   default_root_object = "index.html"
   price_class         = var.cf_price_class
 
@@ -111,7 +111,7 @@ resource "aws_cloudfront_distribution" "cdn" {
 
   viewer_certificate {
     cloudfront_default_certificate = true
-#    minimum_protocol_version       = "TLSv1.2_2021" # TLSv1 only.
+    #    minimum_protocol_version       = "TLSv1.2_2021" # TLSv1 only.
   }
 
   tags = local.tags
@@ -146,7 +146,7 @@ resource "aws_s3_bucket_policy" "site" {
 # App role trust: only pushes to main on the APP repo
 data "aws_iam_policy_document" "gha_trust_app" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
@@ -173,18 +173,18 @@ resource "aws_iam_role" "gha_app" {
 
 data "aws_iam_policy_document" "app_permissions" {
   statement {
-    effect = "Allow"
-    actions = ["s3:PutObject","s3:DeleteObject","s3:PutObjectAcl","s3:GetObject"]
+    effect    = "Allow"
+    actions   = ["s3:PutObject", "s3:DeleteObject", "s3:PutObjectAcl", "s3:GetObject"]
     resources = ["${aws_s3_bucket.site.arn}/*"]
   }
   statement {
-    effect = "Allow"
-    actions = ["s3:ListBucket"]
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
     resources = [aws_s3_bucket.site.arn]
   }
   statement {
-    effect = "Allow"
-    actions = ["cloudfront:CreateInvalidation"]
+    effect    = "Allow"
+    actions   = ["cloudfront:CreateInvalidation"]
     resources = [aws_cloudfront_distribution.cdn.arn]
   }
 }
@@ -202,7 +202,7 @@ resource "aws_iam_role_policy_attachment" "app_attach" {
 # Infra role trust: any ref on the INFRA repo (PRs/branches/tags)
 data "aws_iam_policy_document" "gha_trust_infra" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
@@ -229,7 +229,7 @@ resource "aws_iam_role" "gha_infra" {
 
 data "aws_iam_policy_document" "infra_permissions" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
     actions = ["s3:*"]
     resources = [
       aws_s3_bucket.site.arn,
@@ -237,13 +237,13 @@ data "aws_iam_policy_document" "infra_permissions" {
     ]
   }
   statement {
-    effect = "Allow"
-    actions = ["cloudfront:*"]
+    effect    = "Allow"
+    actions   = ["cloudfront:*"]
     resources = ["*"]
   }
   statement {
-    effect = "Allow"
-    actions = ["iam:Get*","iam:List*"]
+    effect    = "Allow"
+    actions   = ["iam:Get*", "iam:List*"]
     resources = ["*"]
   }
 }
