@@ -14,8 +14,9 @@ provider "aws" {
 
 
 locals {
-  bucket_name = "${var.project}-web-${var.bucket_suffix}"
-  tags        = merge({ Project = var.project }, var.tags)
+  bucket_name_site = "${var.project}-site-${var.bucket_suffix}"
+  bucket_name_logs = "${var.project}-logs-${var.bucket_suffix}"
+  tags             = merge({ Project = var.project }, var.tags)
 }
 
 # --- GitHub OIDC provider (created once) ---
@@ -28,7 +29,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 
 # --- S3 bucket (private, versioned, encrypted) ---
 resource "aws_s3_bucket" "site" {
-  bucket = local.bucket_name
+  bucket = local.bucket_name_site
   tags   = local.tags
 }
 
@@ -59,6 +60,58 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
   }
 }
 
+# --- Bucket for Logs ---
+resource "aws_s3_bucket" "logs" {
+  bucket = local.bucket_name_logs
+  tags   = local.tags
+}
+
+
+resource "aws_s3_bucket_ownership_controls" "logs" {
+  bucket = aws_s3_bucket.logs.id
+  rule { object_ownership = "BucketOwnerPreferred" }
+}
+
+
+resource "aws_s3_bucket_public_access_block" "logs" {
+  bucket                  = aws_s3_bucket.logs.id
+  block_public_acls       = false
+  block_public_policy     = true
+  ignore_public_acls      = false
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "logs" {
+  bucket = aws_s3_bucket.logs.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "logs" {
+  bucket = aws_s3_bucket.logs.id
+  rule {
+    id     = "log-retention"
+    status = "Enabled"
+    filter {
+      prefix = ""
+    }
+    transition {
+      days          = 30
+      storage_class = "GLACIER_IR"
+    }                        # cheap, rapid retrieval
+    expiration { days = 90 } # delete after 90 days
+  }
+}
+
+resource "aws_s3_bucket_logging" "site" {
+  bucket        = aws_s3_bucket.site.id
+  target_bucket = aws_s3_bucket.logs.id
+  target_prefix = "s3/${aws_s3_bucket.site.id}/"
+}
+
 # --- CloudFront OAC ---
 resource "aws_cloudfront_origin_access_control" "oac" {
   name                              = "${var.project}-oac"
@@ -70,6 +123,11 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 
 # --- CloudFront distribution ---
 resource "aws_cloudfront_distribution" "cdn" {
+  logging_config {
+    include_cookies = false
+    bucket          = aws_s3_bucket.logs.bucket_regional_domain_name
+    prefix          = "cloudfront/"
+  }
   enabled             = true
   comment             = var.cloudfront_name
   default_root_object = "index.html"
@@ -109,6 +167,8 @@ resource "aws_cloudfront_distribution" "cdn" {
       locations        = ["AU"]
     }
   }
+
+
 
   viewer_certificate {
     cloudfront_default_certificate = true
