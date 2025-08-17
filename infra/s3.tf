@@ -137,9 +137,9 @@ resource "aws_s3_bucket_ownership_controls" "logs_replica" {
 resource "aws_s3_bucket_public_access_block" "logs_replica" {
   provider                = aws.mel
   bucket                  = aws_s3_bucket.logs_replica.id
-  block_public_acls       = false
+  block_public_acls       = true
   block_public_policy     = true
-  ignore_public_acls      = false
+  ignore_public_acls      = true
   restrict_public_buckets = true
 }
 
