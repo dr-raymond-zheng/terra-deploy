@@ -7,6 +7,25 @@ resource "aws_wafv2_web_acl" "waf" {
     allow {}
   }
   rule {
+    name     = "rate-limit"
+    priority = 2
+    action {
+      block {}
+    }
+    statement {
+      rate_based_statement {
+        limit              = 10
+        evaluation_window_sec = 60
+        aggregate_key_type = "IP"
+      }
+    }
+    visibility_config {
+      sampled_requests_enabled   = true
+      cloudwatch_metrics_enabled = true
+      metric_name                = "rate-limit"
+    }
+  }
+  rule {
     name     = "AWS-AWSManagedRulesCommonRuleSet"
     priority = 1
     override_action {

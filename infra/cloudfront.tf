@@ -59,6 +59,12 @@ resource "aws_cloudfront_distribution" "cdn" {
     response_page_path    = "/index.html"
     error_caching_min_ttl = 0
   }
+  custom_error_response {
+    error_code            = 403
+    response_code         = 403
+    response_page_path    = "/rate-limit.html"
+    error_caching_min_ttl = 60
+  }
 
   restrictions {
     geo_restriction {
