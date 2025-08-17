@@ -85,6 +85,11 @@ resource "aws_s3_bucket_public_access_block" "logs" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_versioning" "logs" {
+  bucket = aws_s3_bucket.logs.id
+  versioning_configuration { status = "Enabled" }
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "logs" {
   bucket = aws_s3_bucket.logs.id
   rule {
@@ -138,6 +143,12 @@ resource "aws_s3_bucket_public_access_block" "logs_replica" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_versioning" "logs_replica" {
+  provider = aws.mel
+  bucket   = aws_s3_bucket.logs_replica.id
+  versioning_configuration { status = "Enabled" }
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "logs_replica" {
   provider = aws.mel
   bucket   = aws_s3_bucket.logs_replica.id
@@ -184,7 +195,7 @@ resource "aws_s3_bucket_policy" "site_replica" {
 }
 
 # Enable CRR on primary -> replica
-resource "aws_s3_bucket_replication_configuration" "crr" {
+resource "aws_s3_bucket_replication_configuration" "site" {
   bucket = aws_s3_bucket.site.id
   role   = aws_iam_role.rep_role.arn
 
@@ -200,3 +211,18 @@ resource "aws_s3_bucket_replication_configuration" "crr" {
   depends_on = [aws_s3_bucket_versioning.site, aws_s3_bucket_versioning.site_replica]
 }
 
+# Cross-Region Replication (CRR)
+resource "aws_s3_bucket_replication_configuration" "logs" {
+  bucket = aws_s3_bucket.logs.id
+  role   = aws_iam_role.rep_role.arn
+
+  rule {
+    id     = "everything"
+    status = "Enabled"
+    destination {
+      bucket        = aws_s3_bucket.logs_replica.arn
+      storage_class = "STANDARD"
+    }
+  }
+  depends_on = [aws_s3_bucket_versioning.logs, aws_s3_bucket_versioning.logs_replica]
+}

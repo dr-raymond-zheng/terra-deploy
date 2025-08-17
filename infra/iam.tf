@@ -132,6 +132,21 @@ data "aws_iam_policy_document" "rep_policy" {
     actions   = ["s3:ReplicateObject", "s3:ReplicateDelete", "s3:ReplicateTags", "s3:ObjectOwnerOverrideToBucketOwner"]
     resources = ["${aws_s3_bucket.site_replica.arn}/*"]
   }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetReplicationConfiguration", "s3:ListBucket"]
+    resources = [aws_s3_bucket.logs.arn]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetObjectVersion", "s3:GetObjectVersionAcl", "s3:GetObjectVersionForReplication", "s3:GetObjectLegalHold", "s3:GetObjectVersionTagging", "s3:GetObjectRetention"]
+    resources = ["${aws_s3_bucket.logs.arn}/*"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:ReplicateObject", "s3:ReplicateDelete", "s3:ReplicateTags", "s3:ObjectOwnerOverrideToBucketOwner"]
+    resources = ["${aws_s3_bucket.logs_replica.arn}/*"]
+  }
 }
 resource "aws_iam_policy" "rep_policy" {
   name   = "s3-replication-policy"
