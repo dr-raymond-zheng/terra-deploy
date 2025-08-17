@@ -1,4 +1,4 @@
-# S3 resources
+# --- Website bucket primar ---
 resource "aws_s3_bucket" "site" {
   bucket = local.bucket_name_site
   tags   = local.tags
@@ -31,7 +31,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
   }
 }
 
-# --- Replica bucket ---
+# --- Website bucket replica ---
 resource "aws_s3_bucket" "site_replica" {
   provider = aws.mel
   bucket   = "${local.bucket_name_site}-replica"
@@ -66,7 +66,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "site_replica" {
   }
 }
 
-# --- Logs bucket ---
+# --- Logs bucket primary ---
 resource "aws_s3_bucket" "logs" {
   bucket = local.bucket_name_logs
   tags   = local.tags
@@ -114,6 +114,62 @@ resource "aws_s3_bucket_logging" "site" {
   bucket        = aws_s3_bucket.site.id
   target_bucket = aws_s3_bucket.logs.id
   target_prefix = "s3/${aws_s3_bucket.site.id}/"
+}
+
+# --- Logs bucket Replica ---
+resource "aws_s3_bucket" "logs_replica" {
+  provider = aws.mel
+  bucket   = "${local.bucket_name_logs}-replica"
+  tags     = local.tags
+}
+
+resource "aws_s3_bucket_ownership_controls" "logs_replica" {
+  provider = aws.mel
+  bucket   = aws_s3_bucket.logs_replica.id
+  rule { object_ownership = "BucketOwnerPreferred" }
+}
+
+resource "aws_s3_bucket_public_access_block" "logs_replica" {
+  provider                = aws.mel
+  bucket                  = aws_s3_bucket.logs_replica.id
+  block_public_acls       = false
+  block_public_policy     = true
+  ignore_public_acls      = false
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "logs_replica" {
+  provider = aws.mel
+  bucket   = aws_s3_bucket.logs_replica.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "logs_replica" {
+  provider = aws.mel
+  bucket   = aws_s3_bucket.logs_replica.id
+  rule {
+    id     = "log-retention"
+    status = "Enabled"
+    filter {
+      prefix = ""
+    }
+    transition {
+      days          = 30
+      storage_class = "GLACIER_IR"
+    }
+    expiration { days = 90 }
+  }
+}
+
+resource "aws_s3_bucket_logging" "site_replica" {
+  provider      = aws.mel
+  bucket        = aws_s3_bucket.site_replica.id
+  target_bucket = aws_s3_bucket.logs_replica.id
+  target_prefix = "s3/${aws_s3_bucket.site_replica.id}/"
 }
 
 resource "aws_s3_bucket_policy" "site" {
