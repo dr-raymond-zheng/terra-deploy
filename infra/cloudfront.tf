@@ -1,4 +1,5 @@
 # CloudFront resources
+
 resource "aws_cloudfront_origin_access_control" "oac" {
   name                              = "${var.project}-oac"
   description                       = "OAC for private S3 origin"
@@ -13,6 +14,7 @@ resource "aws_cloudfront_distribution" "cdn" {
     bucket          = aws_s3_bucket.logs.bucket_regional_domain_name
     prefix          = "cloudfront/"
   }
+  web_acl_id          = aws_wafv2_web_acl.waf.arn
   enabled             = true
   comment             = var.cloudfront_name
   default_root_object = "index.html"

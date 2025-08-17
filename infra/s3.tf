@@ -211,7 +211,7 @@ resource "aws_s3_bucket_replication_configuration" "site" {
   depends_on = [aws_s3_bucket_versioning.site, aws_s3_bucket_versioning.site_replica]
 }
 
-# Cross-Region Replication (CRR)
+# Sync logs from Syd to Mel due to only 1 logging is allowed for CloudFront
 resource "aws_s3_bucket_replication_configuration" "logs" {
   bucket = aws_s3_bucket.logs.id
   role   = aws_iam_role.rep_role.arn
