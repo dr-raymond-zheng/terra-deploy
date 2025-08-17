@@ -14,7 +14,12 @@ provider "aws" {
 
 provider "aws" {
   alias  = "mel"
-  region = var.region2
+  region = var.region_mel
+}
+
+provider "aws" {
+  alias  = "us"
+  region = var.region_us
 }
 
 locals {

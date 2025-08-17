@@ -16,10 +16,15 @@ variable "region" {
   type        = string
   default     = "ap-southeast-2"
 }
-variable "region2" {
+variable "region_mel" {
   description = "AWS region Melbourne"
   type        = string
   default     = "ap-southeast-4"
+}
+variable "region_us" {
+  description = "AWS region US East"
+  type        = string
+  default     = "us-east-1"
 }
 
 # Repos used in GitHub OIDC trust conditions

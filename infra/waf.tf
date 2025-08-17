@@ -1,4 +1,5 @@
 resource "aws_wafv2_web_acl" "waf" {
+  provider    = aws.us
   name        = "waf"
   description = "WAF for CloudFront"
   scope       = "CLOUDFRONT"

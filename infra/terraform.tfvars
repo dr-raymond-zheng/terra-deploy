@@ -1,6 +1,7 @@
 project           = "terra-demo"
 region            = "ap-southeast-2"
-region2           = "ap-southeast-4"
+region_mel        = "ap-southeast-4"
+region_us         = "us-east-1"
 github_repo_app   = "dr-raymond-zheng/static-app"
 github_repo_infra = "dr-raymond-zheng/terra-deploy"
 tags              = { Owner = "dr-raymond-zheng", Environment = "prod" }
