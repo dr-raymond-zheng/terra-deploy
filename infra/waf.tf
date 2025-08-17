@@ -14,9 +14,9 @@ resource "aws_wafv2_web_acl" "waf" {
     }
     statement {
       rate_based_statement {
-        limit              = 10
+        limit                 = 10
         evaluation_window_sec = 60
-        aggregate_key_type = "IP"
+        aggregate_key_type    = "IP"
       }
     }
     visibility_config {
