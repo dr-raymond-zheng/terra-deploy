@@ -41,7 +41,7 @@ data "aws_iam_policy_document" "s3_rep_allow_oac" {
   }
 }
 
-# GitHub Actions roles (App & Infra)
+# GitHub Actions roles for App
 data "aws_iam_policy_document" "gha_trust_app" {
   statement {
     effect  = "Allow"
@@ -72,17 +72,17 @@ resource "aws_iam_role" "gha_app" {
 data "aws_iam_policy_document" "app_permissions" {
   statement {
     effect    = "Allow"
-    actions   = ["s3:PutObject", "s3:DeleteObject", "s3:PutObjectAcl", "s3:GetObject"]
+    actions   = ["s3:PutObject", "s3:DeleteObject", "s3:PutObjectAcl", "s3:GetObject", "s3:GetObjectVersion"]
     resources = ["${aws_s3_bucket.site.arn}/*"]
   }
   statement {
     effect    = "Allow"
-    actions   = ["s3:ListBucket"]
+    actions   = ["s3:ListBucket", "s3:ListBucketVersions"]
     resources = [aws_s3_bucket.site.arn]
   }
   statement {
     effect    = "Allow"
-    actions   = ["cloudfront:CreateInvalidation"]
+    actions   = ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation", "cloudfront:GetDistribution"]
     resources = [aws_cloudfront_distribution.cdn.arn]
   }
 }
