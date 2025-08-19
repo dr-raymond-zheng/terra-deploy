@@ -1,5 +1,5 @@
 output "bucket_name" {
-  value = aws_s3_bucket.site.bucket
+  value = module.bucket_site.bucket
 }
 
 output "cloudfront_domain_name" {

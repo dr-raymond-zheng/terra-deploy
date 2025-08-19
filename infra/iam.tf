@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "s3_allow_oac" {
       identifiers = ["cloudfront.amazonaws.com"]
     }
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.site.arn}/*"]
+    resources = ["${module.bucket_site.arn}/*"]
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "s3_rep_allow_oac" {
       identifiers = ["cloudfront.amazonaws.com"]
     }
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.site_replica.arn}/*"]
+    resources = ["${module.bucket_site_replica.arn}/*"]
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
@@ -73,12 +73,12 @@ data "aws_iam_policy_document" "app_permissions" {
   statement {
     effect    = "Allow"
     actions   = ["s3:PutObject", "s3:DeleteObject", "s3:PutObjectAcl", "s3:GetObject", "s3:GetObjectVersion"]
-    resources = ["${aws_s3_bucket.site.arn}/*"]
+    resources = ["${module.bucket_site.arn}/*"]
   }
   statement {
     effect    = "Allow"
     actions   = ["s3:ListBucket", "s3:ListBucketVersions"]
-    resources = [aws_s3_bucket.site.arn]
+    resources = [module.bucket_site.arn]
   }
   statement {
     effect    = "Allow"
@@ -120,32 +120,32 @@ data "aws_iam_policy_document" "rep_policy" {
   statement {
     effect    = "Allow"
     actions   = ["s3:GetReplicationConfiguration", "s3:ListBucket"]
-    resources = [aws_s3_bucket.site.arn]
+    resources = [module.bucket_site.arn]
   }
   statement {
     effect    = "Allow"
     actions   = ["s3:GetObjectVersion", "s3:GetObjectVersionAcl", "s3:GetObjectVersionForReplication", "s3:GetObjectLegalHold", "s3:GetObjectVersionTagging", "s3:GetObjectRetention"]
-    resources = ["${aws_s3_bucket.site.arn}/*"]
+    resources = ["${module.bucket_site.arn}/*"]
   }
   statement {
     effect    = "Allow"
     actions   = ["s3:ReplicateObject", "s3:ReplicateDelete", "s3:ReplicateTags", "s3:ObjectOwnerOverrideToBucketOwner"]
-    resources = ["${aws_s3_bucket.site_replica.arn}/*"]
+    resources = ["${module.bucket_site_replica.arn}/*"]
   }
   statement {
     effect    = "Allow"
     actions   = ["s3:GetReplicationConfiguration", "s3:ListBucket"]
-    resources = [aws_s3_bucket.logs.arn]
+    resources = [module.bucket_logs.arn]
   }
   statement {
     effect    = "Allow"
     actions   = ["s3:GetObjectVersion", "s3:GetObjectVersionAcl", "s3:GetObjectVersionForReplication", "s3:GetObjectLegalHold", "s3:GetObjectVersionTagging", "s3:GetObjectRetention"]
-    resources = ["${aws_s3_bucket.logs.arn}/*"]
+    resources = ["${module.bucket_logs.arn}/*"]
   }
   statement {
     effect    = "Allow"
     actions   = ["s3:ReplicateObject", "s3:ReplicateDelete", "s3:ReplicateTags", "s3:ObjectOwnerOverrideToBucketOwner"]
-    resources = ["${aws_s3_bucket.logs_replica.arn}/*"]
+    resources = ["${module.bucket_logs_replica.arn}/*"]
   }
 }
 resource "aws_iam_policy" "rep_policy" {

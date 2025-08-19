@@ -11,7 +11,7 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 resource "aws_cloudfront_distribution" "cdn" {
   logging_config {
     include_cookies = false
-    bucket          = aws_s3_bucket.logs.bucket_regional_domain_name
+    bucket          = module.bucket_logs.bucket_regional_domain_name
     prefix          = "cloudfront/"
   }
   web_acl_id          = aws_wafv2_web_acl.waf.arn
@@ -21,26 +21,26 @@ resource "aws_cloudfront_distribution" "cdn" {
   price_class         = var.cf_price_class
 
   origin {
-    domain_name              = aws_s3_bucket.site.bucket_regional_domain_name
-    origin_id                = "s3-${aws_s3_bucket.site.id}"
+    domain_name              = module.bucket_site.bucket_regional_domain_name
+    origin_id                = "s3-${module.bucket_site.id}"
     origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
   }
 
   origin {
-    domain_name              = aws_s3_bucket.site_replica.bucket_regional_domain_name
-    origin_id                = "s3-${aws_s3_bucket.site_replica.id}"
+    domain_name              = module.bucket_site_replica.bucket_regional_domain_name
+    origin_id                = "s3-${module.bucket_site_replica.id}"
     origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
   }
 
   origin_group {
     origin_id = "group-s3"
     failover_criteria { status_codes = [500, 502, 503, 504] }
-    member { origin_id = "s3-${aws_s3_bucket.site.id}" }         # primary
-    member { origin_id = "s3-${aws_s3_bucket.site_replica.id}" } # secondary
+    member { origin_id = "s3-${module.bucket_site.id}" }         # primary
+    member { origin_id = "s3-${module.bucket_site_replica.id}" } # secondary
   }
 
   default_cache_behavior {
-    target_origin_id       = "s3-${aws_s3_bucket.site.id}"
+    target_origin_id       = "s3-${module.bucket_site.id}"
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]

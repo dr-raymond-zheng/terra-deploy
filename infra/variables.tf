@@ -11,7 +11,7 @@ variable "project" {
   type        = string
   default     = "terra-demo"
 }
-variable "region" {
+variable "region_syd" {
   description = "AWS region Sydney"
   type        = string
   default     = "ap-southeast-2"

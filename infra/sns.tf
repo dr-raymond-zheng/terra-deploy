@@ -21,7 +21,7 @@ resource "aws_sns_topic_policy" "s3_site_events_policy" {
         Resource  = aws_sns_topic.s3_site_events.arn
         Condition = {
           ArnLike = {
-            "aws:SourceArn" = aws_s3_bucket.site.arn
+            "aws:SourceArn" = module.bucket_site.arn
           }
         }
       }
@@ -30,7 +30,7 @@ resource "aws_sns_topic_policy" "s3_site_events_policy" {
 }
 
 resource "aws_s3_bucket_notification" "site_events" {
-  bucket = aws_s3_bucket.site.id
+  bucket = module.bucket_site.id
 
   topic {
     topic_arn     = aws_sns_topic.s3_site_events.arn
