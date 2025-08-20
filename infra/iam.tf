@@ -1,8 +1,8 @@
-# --- GitHub OIDC provider (created once) ---
+# --- GitHub OIDC provider ---
 resource "aws_iam_openid_connect_provider" "github" {
   url            = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
-  # GitHub OIDC root CA thumbprint (verify occasionally)
+  # GitHub OIDC root CA thumbprint
   thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
 }
 

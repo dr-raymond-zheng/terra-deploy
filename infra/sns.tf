@@ -1,6 +1,8 @@
 # SNS resources
 resource "aws_sns_topic" "s3_site_events" {
-  name = "s3-site-events"
+  name              = "s3-site-events"
+  kms_master_key_id = "aws/sns"
+  tags              = local.tags
 }
 
 resource "aws_sns_topic_subscription" "s3_site_events_email" {
