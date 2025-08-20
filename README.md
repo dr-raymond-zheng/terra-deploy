@@ -11,8 +11,10 @@ Two IAM roles are created for GitHub Actions via OIDC:
 - Infra role: Used by this repo to run Terraform.
 
 ## Created AWS Resources
-- Private S3 bucket (versioned, SSE-S3)
+- 3 Private S3 bucket (versioned, SSE-S3)
+- 1 Public S3 bucket (versioned, SSE-S3) for CloudFront logging
 - CloudFront distribution with Origin Access Control (OAC)
+- WAF with Anti-DDos, rate limit etc.
 - IAM OpenID Connect provider for GitHub
 - IAM roles for App and Infra (least privilege)
 - Terraform outputs for easy wiring to the app repo pipeline
