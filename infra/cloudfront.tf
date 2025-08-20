@@ -40,17 +40,13 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   default_cache_behavior {
-    target_origin_id       = "s3-${module.bucket_site.id}"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    compress               = true
-
-    forwarded_values {
-      query_string = false
-      headers      = []
-      cookies { forward = "none" }
-    }
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.csp.id
+    cache_policy_id            = aws_cloudfront_cache_policy.cache.id
+    target_origin_id           = "s3-${module.bucket_site.id}"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = true
   }
 
   custom_error_response {
@@ -79,4 +75,63 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   tags = local.tags
+}
+
+resource "aws_cloudfront_response_headers_policy" "csp" {
+  name = "app-csp-policy"
+
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+    content_security_policy {
+      override                = true
+      content_security_policy = "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self' https://api.example.com; form-action 'self'; upgrade-insecure-requests"
+    }
+
+    referrer_policy {
+      override        = true
+      referrer_policy = "strict-origin-when-cross-origin"
+    }
+
+    strict_transport_security {
+      override                   = true
+      access_control_max_age_sec = 31536000
+      include_subdomains         = true
+      preload                    = false
+    }
+
+    xss_protection {
+      override   = true
+      protection = true
+      mode_block = true
+    }
+    frame_options {
+      override     = true
+      frame_option = "SAMEORIGIN"
+    }
+  }
+}
+
+resource "aws_cloudfront_cache_policy" "cache" {
+  name        = "app-cache-policy"
+  default_ttl = 3600
+  max_ttl     = 86400
+  min_ttl     = 0
+  parameters_in_cache_key_and_forwarded_to_origin {
+    enable_accept_encoding_gzip   = true
+    enable_accept_encoding_brotli = true
+
+    headers_config {
+      header_behavior = "none"
+    }
+
+    cookies_config {
+      cookie_behavior = "none"
+    }
+
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
 }
